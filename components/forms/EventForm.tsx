@@ -49,6 +49,19 @@ export default function EventForm({
     },
   })
 
+  // Handle form submission
+  async function onSubmit(values: z.infer<typeof eventFormSchema>) {
+    const action = event == null ? createEvent : updateEvent.bind(null, event.id);
+    try {
+      await action(values);
+    } catch (error: any) {
+      // Handle any error that occurs during the action (e.g., network error)
+      form.setError("root", {
+        message: `There was an erorr saving your event ${error.message}`,
+      })
+    }
+  }
+
   return (
     <Form {...form}>
       <form
