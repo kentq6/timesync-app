@@ -11,10 +11,9 @@ export const eventFormSchema = z.object({
   // 'isActive' is a boolean value that defaults to true if not provided
   isActive: z.boolean(),
 
-  // 'durationInMinutes' will be coerced (converted) to a number
-  // If must be an integer, greater tahn 0, and less than or equal to 720 (12 hours)
-  durationInMinutes: z // z.coerce
-    .number()
+  // 'durationInMinutes' must be a number
+  // It must be an integer, greater than 0, and less than or equal to 720 (12 hours)
+  durationInMinutes: z.number()
     .int()
     .positive("Duration must be greater than 0")
     .max(60 * 12, `Duration must be less than 12 hours (${60 * 12} minutes)`),
