@@ -1,9 +1,9 @@
 'use client'
 import { eventFormSchema } from "@/schema/events"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Form, useForm } from "react-hook-form"
+import { useForm } from "react-hook-form"
 import { z } from "zod"
-import { FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "../ui/form"
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "../ui/form"
 import { Input } from "../ui/input"
 import { Textarea } from "../ui/textarea"
 import { Switch } from "../ui/switch"
@@ -11,6 +11,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Button } from "../ui/button"
 import { useTransition } from "react"
 import Link from "next/link"
+import { createEvent, updateEvent, deleteEvent } from "@/server/actions/events"
 
 // Marks this as a Client Component in Next.js
 
@@ -37,16 +38,19 @@ export default function EventForm({
 
   const form = useForm<z.infer<typeof eventFormSchema>>({
     resolver: zodResolver(eventFormSchema), // Validate with Zod schema
-    defaultValues: event ? {
-      // If `event` is provided (edit mode), spread its existing properties as default values
-      ...event,
-    } : {
-      // If `event` is not provided (create mode), use these fallback defaults
-      isActive: true,         // New events are active by default
-      durationInMinutes: 30,  // Default duration is 30 minutes
-      description: '',        // Ensure controlled input: default to empty string
-      name: '',               // Ensure controlled input: default to empty string
-    },
+    defaultValues: event
+      ? {
+          // If `event` is provided (edit mode), spread its existing properties as default values
+          ...event,
+          durationInMinutes: Number(event.durationInMinutes), // Ensure correct type
+        }
+      : {
+          // If `event` is not provided (create mode), use these fallback defaults
+          isActive: true,         // New events are active by default
+          durationInMinutes: 30,  // Default duration is 30 minutes
+          description: '',        // Ensure controlled input: default to empty string
+          name: '',               // Ensure controlled input: default to empty string
+        },
   })
 
   // Handle form submission
@@ -57,7 +61,7 @@ export default function EventForm({
     } catch (error: any) {
       // Handle any error that occurs during the action (e.g., network error)
       form.setError("root", {
-        message: `There was an erorr saving your event ${error.message}`,
+        message: `There was an error saving your event: ${error.message}`,
       })
     }
   }
@@ -192,6 +196,7 @@ export default function EventForm({
                       })
                     }}
                   >
+                    Confirm
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
@@ -210,7 +215,7 @@ export default function EventForm({
 
           {/* Save Button - submits the form */}
           <Button
-            className="cursor-pointer hover:scale-105 bg0blue-400 hover:bg-blue-600"
+            className="cursor-pointer hover:scale-105 bg-blue-400 hover:bg-blue-600"
             disabled={isDeletePending || form.formState.isSubmitting}
             type="submit"
           >
