@@ -27,14 +27,12 @@ export default function EventForm({
     isActive: boolean         // Indicates whether the event is currently active  
   }
 }) {
-
-
   // useTransition is a React hook tat helps manage the state of transitions in aysnc operations
   // If returns two values:
   // 1. `isDeletePending` - This is a boolean that tells us if the deletion is still in progress
   // 2. `startDeleteTransition` - This is a function we can use to start the async operation, like deleting an event
 
-  const [isDeletePending, startDeleteTransition] = useTransition()
+  const [isDeletePending, startDeleteTransition] = useTransition();
 
   const form = useForm<z.infer<typeof eventFormSchema>>({
     resolver: zodResolver(eventFormSchema), // Validate with Zod schema
