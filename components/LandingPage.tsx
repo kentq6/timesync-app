@@ -12,9 +12,9 @@ export default function LandingPage() {
       <section className="flex flex-col items-center">
         {/* App Logo */}
         <Image 
-          src='/assets/logo.svg'
-          width={300}
-          height={300}
+          src='/assets/logo.png'
+          width={500}
+          height={500}
           alt="Logo"
         />
 

@@ -15,7 +15,7 @@ export default function PrivateNavBar() {
       {/* Logo */}
       <Link href="/events" className="flex items-center gap-1 hover:scale-150 duration-500 ">
         <Image 
-          src="/assets/logo.svg"
+          src="/assets/logo.png"
           width={60}
           height={60}
           alt="Let's Talk"
