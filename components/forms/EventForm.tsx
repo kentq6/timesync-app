@@ -1,17 +1,36 @@
-'use client'
-import { eventFormSchema } from "@/schema/events"
-import { zodResolver } from "@hookform/resolvers/zod"
-import { useForm } from "react-hook-form"
-import { z } from "zod"
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "../ui/form"
-import { Input } from "../ui/input"
-import { Textarea } from "../ui/textarea"
-import { Switch } from "../ui/switch"
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "../ui/alert-dialog"
-import { Button } from "../ui/button"
-import { useTransition } from "react"
-import Link from "next/link"
-import { createEvent, updateEvent, deleteEvent } from "@/server/actions/events"
+"use client";
+import { eventFormSchema } from "@/schema/events";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "../ui/form";
+import { Input } from "../ui/input";
+import { Textarea } from "../ui/textarea";
+import { Switch } from "../ui/switch";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "../ui/alert-dialog";
+import { Button } from "../ui/button";
+import { useTransition } from "react";
+import Link from "next/link";
+import { createEvent, deleteEvent, updateEvent } from "@/server/actions/events";
+import { useRouter } from "next/navigation";
 
 // Marks this as a Client Component in Next.js
 
@@ -19,20 +38,23 @@ import { createEvent, updateEvent, deleteEvent } from "@/server/actions/events"
 export default function EventForm({
   event, // Destructure the `event` object from the props
 }: {
-  event?: { // Optional `event` object (might be undefined if creating a new event)
-    id: string                // Unique identifier for the event
-    name: string              // Name of the event
-    description?: string      // Optional description of the event
-    durationInMinutes: number // Duration of the event in minutes
-    isActive: boolean         // Indicates whether the event is currently active  
-  }
+  // Define the shape (TypeScript type) of the expected props
+  event?: {
+    // Optional `event` object (might be undefined if creating a new event)
+    id: string; // Unique identifier for the event
+    name: string; // Name of the event
+    description?: string; // Optional description of the event
+    durationInMinutes: number; // Duration of the event in minutes
+    isActive: boolean; // Indicates whether the event is currently active
+  };
 }) {
-  // useTransition is a React hook tat helps manage the state of transitions in aysnc operations
-  // If returns two values:
+  // useTransition is a React hook that helps manage the state of transitions in async operations
+  // It returns two values:
   // 1. `isDeletePending` - This is a boolean that tells us if the deletion is still in progress
   // 2. `startDeleteTransition` - This is a function we can use to start the async operation, like deleting an event
 
   const [isDeletePending, startDeleteTransition] = useTransition();
+  const router = useRouter();
 
   const form = useForm<z.infer<typeof eventFormSchema>>({
     resolver: zodResolver(eventFormSchema), // Validate with Zod schema
@@ -40,27 +62,28 @@ export default function EventForm({
       ? {
           // If `event` is provided (edit mode), spread its existing properties as default values
           ...event,
-          durationInMinutes: Number(event.durationInMinutes), // Ensure correct type
         }
       : {
           // If `event` is not provided (create mode), use these fallback defaults
-          isActive: true,         // New events are active by default
-          durationInMinutes: 30,  // Default duration is 30 minutes
-          description: '',        // Ensure controlled input: default to empty string
-          name: '',               // Ensure controlled input: default to empty string
+          isActive: true, // New events are active by default
+          durationInMinutes: 30, // Default duration is 30 minutes
+          description: "", // Ensure controlled input: default to empty string
+          name: "", // Ensure controlled input: default to empty string
         },
-  })
+  });
 
   // Handle form submission
   async function onSubmit(values: z.infer<typeof eventFormSchema>) {
-    const action = event == null ? createEvent : updateEvent.bind(null, event.id);
+    const action =
+      event == null ? createEvent : updateEvent.bind(null, event.id);
     try {
       await action(values);
+      router.push("/events");
     } catch (error: any) {
       // Handle any error that occurs during the action (e.g., network error)
       form.setError("root", {
-        message: `There was an error saving your event: ${error.message}`,
-      })
+        message: `There was an error saving your event ${error.message}`,
+      });
     }
   }
 
@@ -103,11 +126,16 @@ export default function EventForm({
             <FormItem>
               <FormLabel>Duration</FormLabel>
               <FormControl>
-                <Input type="number" {...field} />
+                <Input
+                  type="number"
+                  {...field}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    field.onChange(value === "" ? 0 : Number(value));
+                  }}
+                />
               </FormControl>
-              <FormDescription>
-                In Minutes
-              </FormDescription>
+              <FormDescription>In minutes</FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -160,7 +188,7 @@ export default function EventForm({
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
-                  className="cursor pointer hover:scale-105 hover:bg-red-700"
+                  className="cursor-pointer hover:scale-105 hover:bg-red-700"
                   variant="destructive"
                   disabled={isDeletePending || form.formState.isSubmitting}
                 >
@@ -171,7 +199,8 @@ export default function EventForm({
                 <AlertDialogHeader>
                   <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete this event.
+                    This action cannot be undone. This will permanently delete
+                    this event.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
@@ -184,17 +213,18 @@ export default function EventForm({
                       startDeleteTransition(async () => {
                         try {
                           // Attempt to delete the event by its ID
-                          await deleteEvent(event.id)
+                          await deleteEvent(event.id);
+                          router.push("/events");
                         } catch (error: any) {
                           // If something goes wrong, show an error at the root level of the form
                           form.setError("root", {
                             message: `There was an error deleting your event: ${error.message}`,
-                          })
+                          });
                         }
-                      })
+                      });
                     }}
                   >
-                    Confirm
+                    Delete
                   </AlertDialogAction>
                 </AlertDialogFooter>
               </AlertDialogContent>
