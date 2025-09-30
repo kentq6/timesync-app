@@ -105,3 +105,25 @@ export async function deleteEvent(
   }
 }
 
+// Infer the type if a row rom the EventTable schema
+type EventRow = typeof EventTable.$inferSelect;
+
+// Async function to fetch all events (active and inactive) for a specific user
+export async function getEvents(clerkUserId: string): Promise<EventRow[]> {
+  // Query the database for events where the clerkUserId matches
+  const events = await db.query.EventTable.findMany({
+    // where: – This defines a filter (a WHERE clause) for your query.
+
+    // ({ clerkUserId: userIdCol }, { eq }) => ... — This is a destructured function:
+    
+    // clerkUserId is a variable (likely passed in earlier to the query).
+    
+    // userIdCol is a reference to a column in your database (you're just renaming clerkUserId to userIdCol for clarity).
+    where: ({ clerkUserId: userIdCol }, { eq }) => eq(userIdCol, clerkUserId),
+
+    // Events are ordered alphabetically (case-insensitive) by name
+    orderBy: ({ name }, { asc, sql }) => asc(sql`lower(${name})`), 
+  });
+  // Return the full list of events
+  return events;
+}
