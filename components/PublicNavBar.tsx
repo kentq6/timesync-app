@@ -10,8 +10,8 @@ export default function PublicNavBar() {
       <Link href="/login" className="flex items-center gap-1 hover:scale-150 duration-500">
         <Image
           src="/assets/logo.png"
-          width={150}
-          height={150}
+          width={100}
+          height={100}
           alt="TimeSync"
         />
       </Link>
