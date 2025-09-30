@@ -11,7 +11,7 @@ export default async function EditEventPage({
 }) {
   // Get the current authenticated user and handle the redirect if the user is not logged in
   const { userId, redirectToSignIn } = await auth();
-  if (userId === null) return redirectToSignIn();
+  if (!userId) return redirectToSignIn();
 
   const { eventId } = await params;
 
