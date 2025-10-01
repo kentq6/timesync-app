@@ -15,3 +15,13 @@ export function formatEventDescription(durationInMinutes: number): string {
   // Return both hours and minutes if both are present
   return `${hoursString} ${minutesString}`;
 }
+
+// Gets the short offset string for a given timezon, like "+02:00"
+export function formatTimezoneOffset(timezone: string) {
+  return new Intl.DateTimeFormat(undefined, {
+    timeZone: timezone,
+    timeZoneName: "shortOffset", // Request the short offset string
+  })
+    .formatToParts(new Date()) // Format the current date into parts
+    .find(part => part.type == "timeZoneName")?.value // Extract the timezone offset part
+}
