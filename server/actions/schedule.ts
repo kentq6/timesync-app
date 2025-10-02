@@ -19,7 +19,7 @@ export type FullSchedule = ScheduleRow & {
 }
 
 // This functio fetches the schedule (and its availabilities) for a given use rfrom the database
-export async function getSchedule(userId: string): Promise<FullSchedule | null> {
+export async function getSchedule(userId: string): Promise<FullSchedule> {
   // Query the ScheduleTable for the first record that matches the user's ID
   // Also eagerly load the related 'availabilities' data
   const schedule = await db.query.ScheduleTable.findFirst({
@@ -30,7 +30,7 @@ export async function getSchedule(userId: string): Promise<FullSchedule | null> 
   });
 
   // Return the schedule if found or null if it doesn't exist
-  return schedule as FullSchedule | null;
+  return schedule as FullSchedule;
 }
 
 export async function saveSchedule(unsafeData: z.infer<typeof scheduleFormSchema>) {
