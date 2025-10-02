@@ -1,5 +1,6 @@
 // This code defines a `SchedulePage` component that is responsible for rendering a user's schedule page. It first checks if the user is authenticated using Clerk's authentication system; if not, the user is redirected to the sign-in page. Then, it queries the database for the user's schedule, including any availability information associated with it. Once the schedule data is retrieved, it renders the page within a card layout, displaying a title and a `ScheduleForm` component populated with the user's schedule. This allows the user to view and possibly manage their schedule on the page.
 
+import { ScheduleForm } from "@/components/forms/ScheduleForm";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { getSchedule } from "@/server/actions/schedule";
 import { auth } from "@clerk/nextjs/server";
@@ -19,7 +20,7 @@ export default async function SchedulePage() {
         <CardTitle>Schedule</CardTitle>
       </CardHeader>
       <CardContent>
-        {/* <ScheduleForm schedule={schedule} /> Render the ScheduleForm component with the fetched schedule */}
+        <ScheduleForm schedule={schedule} /> {/* Render the ScheduleForm component with the fetched schedule */}
       </CardContent>
     </Card>
   );
