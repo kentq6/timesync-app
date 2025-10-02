@@ -86,6 +86,6 @@ export async function saveSchedule(unsafeData: z.infer<typeof scheduleFormSchema
     throw new Error(`Failed to save schedule: ${error.message || error}`)
   } finally {
     // Revalidate the /schedule path to udpate the cache and reflect the new data
-    revalidatePath("/schedule");
+    revalidatePath('/schedule');
   }
 }
