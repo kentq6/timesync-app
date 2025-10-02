@@ -30,7 +30,7 @@ export async function createEvent(
     throw new Error(`Failed to create event: ${error.message || error}`);
   } finally {
     // Revalidate the '/events' path to ensure the page fetches fresh data after the database operation
-    revalidatePath("/events");
+    revalidatePath('/events');
   }
 }
 
@@ -68,7 +68,7 @@ export async function updateEvent(
     throw new Error(`Failed to create event: ${error.message || error}`);
   } finally {
     // Revalidate the '/events' path to ensure the page fetches fresh data after the database operation
-    revalidatePath("/events");
+    revalidatePath('/events');
   }
 }
 
@@ -101,7 +101,7 @@ export async function deleteEvent(
     throw new Error(`Failed to delete event: ${error.message || error}`);
   } finally {
     // Revalidate the '/events' path to ensure the page fetches fresh data after the database operation
-    revalidatePath("/events");
+    revalidatePath('/events');
   }
 }
 
