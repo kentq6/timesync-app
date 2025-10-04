@@ -10,10 +10,23 @@ import { auth } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
 import { BatchItem } from "drizzle-orm/batch";
 import { revalidatePath } from "next/cache";
-import z from "zod";
 import { getCalendarEventTimes } from "../google/googleCalendar";
 import { DAYS_OF_WEEK_IN_ORDER } from "@/constants";
-import { isFriday, isMonday, isSaturday, isSunday, isThursday, isTuesday, isWednesday, setHours, setMinutes } from "date-fns";
+import {
+  addMinutes,
+  areIntervalsOverlapping,
+  isFriday,
+  isMonday,
+  isSaturday,
+  isSunday,
+  isThursday,
+  isTuesday,
+  isWednesday,
+  isWithinInterval,
+  setHours,
+  setMinutes,
+} from "date-fns";
+import z from "zod";
 
 type ScheduleRow = typeof ScheduleTable.$inferSelect;
 type AvailabilityRow = typeof ScheduleAvailabilityTable.$inferSelect;
@@ -140,6 +153,27 @@ export async function getValidTimesFromSchedule(
       intervalDate,
       schedule.timezone
     );
+
+    // Define the time range for a potential event starting at this interval
+    const eventInterval = {
+      start: intervalDate, // Proposed start time
+      end: addMinutes(intervalDate, event.durationInMinutes), // Proposed end time (start + duration)
+    };
+
+    // Keep only the time slots that satisfy two conditions:
+    return (
+      // 1. This time slot does not overlap with any existing calendar events
+      eventTimes.every((eventTime) => {
+        return !areIntervalsOverlapping(eventTime, eventInterval);
+      }) &&
+      // 2. The entire proposed event fits within at least one availability window
+      availabilities.some((availability) => {
+        return (
+          isWithinInterval(eventInterval.start, availability) && // Start is inside availability
+          isWithinInterval(eventInterval.end, availability) // End is inside availability
+        );
+      })
+    );
   });
 }
 
@@ -151,7 +185,7 @@ function getAvailabilities(
     >
   >,
   date: Date,
-  timezone: string,
+  timezone: string
 ): { start: Date; end: Date }[] {
   // Determine the day of the week based on the given date
   const dayOfWeek = (() => {
@@ -177,16 +211,16 @@ function getAvailabilities(
   // Map each availability time range to a { start: Date; end: Date } object adjusted to the user's timezone
   return dayAvailabilities.map(({ startTime, endTime }) => {
     // Parse startTime (e.g., "09:30") into hours and minutes
-    const [startHour, startMinute] = startTime.split(':').map(Number);
+    const [startHour, startMinute] = startTime.split(":").map(Number);
     // Parse endTime (e.g., "17:00") into hours and minutes
-    const [endHour, endMinute] = endTime.split(':').map(Number);
+    const [endHour, endMinute] = endTime.split(":").map(Number);
 
     // Create a start Date object set to the correct hour and minute, then convert it to the given timezone
     const start = fromZonedTime(
       setMinutes(setHours(date, startHour), startMinute),
       timezone
     );
-    
+
     // Create an end Date object set to the correct hour and minute, then convert it to the given timezone
     const end = fromZonedTime(
       setMinutes(setHours(date, endHour), endMinute),
